@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import csv
+import webbrowser
 
 URL = 'https://www.kinopoisk.ru/lists/top250/?sort=title&tab=all'
 HEADERS = {
@@ -21,15 +22,19 @@ def get_html(url, params=None):
 
 def get_content(html):
     soup = BeautifulSoup(html, 'html.parser')
+    print(soup.text)
     is_captcha_on_page = soup.find("input", id="recaptcha-token")
     if is_captcha_on_page == None:
         print("Error: site want captcha, wait 10-60min")
-        print(f'Input captcha:', soup.find('img').get('src'))
+        captcha_image_link = soup.find('div', class_='captcha__image').find('img').get('src')
+        webbrowser.open(captcha_image_link, new=2) #open captcha image
+        #CANT WROTE CAPTCHA PARSER
         captcha_str = input("Input:")
-        button = sout.find('button', class_='submit')
-        element = button.find_element_by_class('input-wrapper__content')
-        element.click()#HERE STOP
-        
+        payload = {'rep': captcha_str}
+        r = requests.post(URL, payload)
+        with open("requests_results2.html", "w") as f:
+            f.write(r.text)
+
         return
     soup = BeautifulSoup(html, 'html.parser')
     items = soup.find_all('div', class_='desktop-rating-selection-film-item')
